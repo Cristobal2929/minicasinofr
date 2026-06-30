@@ -1,16 +1,17 @@
 package com.fenix.minicasino
 
-import android.animation.ValueAnimator
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.GradientDrawable
 import android.graphics.Paint
-import android.graphics.RectF
 import android.graphics.Path
-import android.graphics.drawable.GradientDrawable
+import android.graphics.RectF
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.PI
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
             btn.setTextColor(Color.WHITE)
             btn.textSize = 18f
             btn.setAllCaps(false)
-            btn.setTypeface(null, android.graphics.Typeface.BOLD)
+            btn.setTypeface(null, Typeface.BOLD)
             val drawable = GradientDrawable()
             drawable.setColor(Color.parseColor("#C41E3A"))
             drawable.cornerRadius = 16f
@@ -89,18 +89,10 @@ class MainActivity : AppCompatActivity() {
             return btn
         }
 
-        layout.addView(
-            crearBoton("🎰 Ruleta", 1001) { iniciarRuleta() }
-        )
-        layout.addView(
-            crearBoton("🎟️ Rasca y Gana", 1002) { iniciarRasca() }
-        )
-        layout.addView(
-            crearBoton("🃏 Blackjack", 1003) { iniciarBlackjack() }
-        )
-        layout.addView(
-            crearBoton("🎱 Ruleta Casino", 1004) { iniciarRuletaCasino() }
-        )
+        layout.addView(crearBoton("🎰 Ruleta", 1001) { iniciarRuleta() })
+        layout.addView(crearBoton("🎟️ Rasca y Gana", 1002) { iniciarRasca() })
+        layout.addView(crearBoton("🃏 Blackjack", 1003) { iniciarBlackjack() })
+        layout.addView(crearBoton("🎱 Ruleta Casino", 1004) { iniciarRuletaCasino() })
 
         contenedor.addView(layout)
     }
@@ -118,28 +110,37 @@ class MainActivity : AppCompatActivity() {
         }
 
         val ruletaView = RuletaView(this)
-        layout.addView(ruletaView, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            0,
-            1f
-        ))
+        layout.addView(
+            ruletaView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+            )
+        )
 
         val btnGirar = Button(this).apply {
             text = "Girar"
             setTextColor(Color.WHITE)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTypeface(null, Typeface.BOLD)
             setBackgroundColor(Color.parseColor("#C41E3A"))
         }
-        layout.addView(btnGirar, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnGirar,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
         val btnVolver = crearBotonVolver()
-        layout.addView(btnVolver, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnVolver,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
         btnGirar.setOnClickListener {
             if (puntosUsuario < 10) {
@@ -225,6 +226,9 @@ class MainActivity : AppCompatActivity() {
             val cy = height / 2f
             val rect = RectF(cx - radius, cy - radius, cx + radius, cy + radius)
 
+            // Dibujar sectores girados
+            canvas.save()
+            canvas.rotate(rotacionActual, cx, cy)
             val colores = arrayOf(
                 Color.parseColor("#C41E3A"),
                 Color.parseColor("#1B2B4D")
@@ -236,11 +240,13 @@ class MainActivity : AppCompatActivity() {
                 canvas.drawArc(rect, 0f, 45f, true, paintSector)
                 canvas.restore()
             }
-            // bordes
+            canvas.restore()
+
+            // Borde
             canvas.drawCircle(cx, cy, radius, paintBorder)
 
-            // texto multiplicadores
-            val multiplicadores = arrayOf("x0","x0","x0","x2","x2","x3","x5","x10")
+            // Texto multiplicadores
+            val multiplicadores = arrayOf("x0", "x0", "x0", "x2", "x2", "x3", "x5", "x10")
             for (i in 0 until 8) {
                 val angle = Math.toRadians((i * 45 + 22.5).toDouble())
                 val tx = (cx + (radius * 0.6) * cos(angle)).toFloat()
@@ -248,18 +254,13 @@ class MainActivity : AppCompatActivity() {
                 canvas.drawText(multiplicadores[i], tx, ty, paintText)
             }
 
-            // flecha arriba
+            // Flecha arriba (no gira)
             val path = Path()
             path.moveTo(cx, cy - radius - 30)
             path.lineTo(cx - 30, cy - radius + 10)
             path.lineTo(cx + 30, cy - radius + 10)
             path.close()
             canvas.drawPath(path, paintArrow)
-
-            // rotar ruleta
-            canvas.save()
-            canvas.rotate(rotacionActual, cx, cy)
-            canvas.restore()
         }
     }
 
@@ -284,30 +285,39 @@ class MainActivity : AppCompatActivity() {
             it.textSize = 48f
             it.textAlignment = View.TEXT_ALIGNMENT_CENTER
             it.setTextColor(Color.WHITE)
-            layout.addView(it, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { setMargins(0, 16, 0, 0) })
+            layout.addView(
+                it,
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { setMargins(0, 16, 0, 0) }
+            )
         }
 
         val btnComprar = Button(this).apply {
             text = "Comprar carta"
             setTextColor(Color.WHITE)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTypeface(null, Typeface.BOLD)
             setBackgroundColor(Color.parseColor("#C41E3A"))
         }
-        layout.addView(btnComprar, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 24, 0, 0) })
+        layout.addView(
+            btnComprar,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 24, 0, 0) }
+        )
 
         val btnVolver = crearBotonVolver()
-        layout.addView(btnVolver, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnVolver,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
-        val simbolos = arrayOf("🍒","🍋","🔔","💎","7️⃣")
+        val simbolos = arrayOf("🍒", "🍋", "🔔", "💎", "7️⃣")
 
         btnComprar.setOnClickListener {
             if (puntosUsuario < 5) {
@@ -378,20 +388,20 @@ class MainActivity : AppCompatActivity() {
         val btnRepartir = Button(this).apply {
             text = "Repartir"
             setTextColor(Color.WHITE)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTypeface(null, Typeface.BOLD)
             setBackgroundColor(Color.parseColor("#C41E3A"))
         }
         val btnPedir = Button(this).apply {
             text = "Pedir carta"
             setTextColor(Color.WHITE)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTypeface(null, Typeface.BOLD)
             setBackgroundColor(Color.parseColor("#C41E3A"))
             isEnabled = false
         }
         val btnPlantarse = Button(this).apply {
             text = "Plantarse"
             setTextColor(Color.WHITE)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTypeface(null, Typeface.BOLD)
             setBackgroundColor(Color.parseColor("#C41E3A"))
             isEnabled = false
         }
@@ -401,17 +411,21 @@ class MainActivity : AppCompatActivity() {
         layout.addView(btnPlantarse)
 
         val btnVolver = crearBotonVolver()
-        layout.addView(btnVolver, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnVolver,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
         var cartasJugador = mutableListOf<Int>()
         var cartasDealer = mutableListOf<Int>()
         val apuesta = 10
 
         fun actualizarPantalla() {
-            tvJugador.text = "Jugador: ${cartasJugador.joinToString(", ")} (Total: ${cartasJugador.sum()})"
+            tvJugador.text =
+                "Jugador: ${cartasJugador.joinToString(", ")} (Total: ${cartasJugador.sum()})"
             val dealerVisible = if (cartasDealer.isNotEmpty()) cartasDealer[0].toString() else ""
             tvDealer.text = "Banca: $dealerVisible, ?"
         }
@@ -451,7 +465,8 @@ class MainActivity : AppCompatActivity() {
 
         btnPlantarse.setOnClickListener {
             // revelar dealer
-            tvDealer.text = "Banca: ${cartasDealer.joinToString(", ")} (Total: ${cartasDealer.sum()})"
+            tvDealer.text =
+                "Banca: ${cartasDealer.joinToString(", ")} (Total: ${cartasDealer.sum()})"
             var dealerTotal = cartasDealer.sum()
             while (dealerTotal < 17) {
                 val nueva = Random.nextInt(1, 12)
@@ -502,11 +517,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         val ruletaCasinoView = RuletaCasinoView(this)
-        layout.addView(ruletaCasinoView, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            0,
-            1f
-        ))
+        layout.addView(
+            ruletaCasinoView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+            )
+        )
 
         val btnRojo = Button(this).apply {
             text = "Rojo"
@@ -531,37 +549,49 @@ class MainActivity : AppCompatActivity() {
         btnGroup.addView(btnNegro, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         btnGroup.addView(btnVerde, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
 
-        layout.addView(btnGroup, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnGroup,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
         val editNumero = EditText(this).apply {
             hint = "Número (0-11)"
             setTextColor(Color.WHITE)
             setHintTextColor(Color.LTGRAY)
         }
-        layout.addView(editNumero, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 8, 0, 0) })
+        layout.addView(
+            editNumero,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 8, 0, 0) }
+        )
 
         val btnGirar = Button(this).apply {
             text = "Girar"
             setTextColor(Color.WHITE)
-            setTypeface(null, android.graphics.Typeface.BOLD)
+            setTypeface(null, Typeface.BOLD)
             setBackgroundColor(Color.parseColor("#C41E3A"))
         }
-        layout.addView(btnGirar, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnGirar,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
         val btnVolver = crearBotonVolver()
-        layout.addView(btnVolver, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { setMargins(0, 16, 0, 0) })
+        layout.addView(
+            btnVolver,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16, 0, 0) }
+        )
 
         var colorSeleccionado: String? = null
         fun actualizarSeleccion(btn: Button, color: String) {
@@ -614,9 +644,17 @@ class MainActivity : AppCompatActivity() {
                     }
                     if (ganancia > 0) {
                         puntosUsuario += ganancia
-                        Toast.makeText(this@MainActivity, "Ganaste $ganancia puntos!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "Ganaste $ganancia puntos!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     } else {
-                        Toast.makeText(this@MainActivity, "No ganaste puntos.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "No ganaste puntos.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                     guardarPuntos()
                     actualizarPuntos()
@@ -663,7 +701,7 @@ class MainActivity : AppCompatActivity() {
             val cy = height / 2f
             val rect = RectF(cx - radius, cy - radius, cx + radius, cy + radius)
 
-            // dibujar sectores
+            // Dibujar sectores
             for (i in 0 until 12) {
                 when {
                     i == 0 -> paintSector.color = Color.parseColor("#2E7D32") // verde
@@ -676,10 +714,10 @@ class MainActivity : AppCompatActivity() {
                 canvas.restore()
             }
 
-            // borde
+            // Borde
             canvas.drawCircle(cx, cy, radius, paintBorder)
 
-            // números
+            // Números
             for (i in 0 until 12) {
                 val angle = Math.toRadians((i * 30 + 15).toDouble())
                 val tx = (cx + (radius * 0.7) * cos(angle)).toFloat()
@@ -687,7 +725,7 @@ class MainActivity : AppCompatActivity() {
                 canvas.drawText(i.toString(), tx, ty, paintText)
             }
 
-            // bola
+            // Bola
             val ballRadius = radius * 0.07f
             val ballAngleRad = Math.toRadians(anguloBola.toDouble())
             val bx = (cx + (radius * 0.6) * cos(ballAngleRad)).toFloat()
@@ -701,7 +739,7 @@ class MainActivity : AppCompatActivity() {
         val btn = Button(this)
         btn.text = "← Volver"
         btn.setTextColor(Color.parseColor("#D4AF37"))
-        btn.setTypeface(null, android.graphics.Typeface.BOLD)
+        btn.setTypeface(null, Typeface.BOLD)
         val drawable = GradientDrawable()
         drawable.setColor(Color.TRANSPARENT)
         drawable.setStroke(4, Color.parseColor("#D4AF37"))
