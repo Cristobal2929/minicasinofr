@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
             }
             animator.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
-                    val sector = ((ruletaView.rotacionActual % 360) / 45).toInt()
+                    val sector = ((ruletaView.rotacionActual % 360f) / 45f).toInt()
                     val multiplicadores = arrayOf(0, 0, 0, 2, 2, 3, 5, 10)
                     val ganancia = multiplicadores[sector] * 10
                     if (ganancia > 0) {
@@ -408,7 +408,7 @@ class MainActivity : AppCompatActivity() {
 
         var cartasJugador = mutableListOf<Int>()
         var cartasDealer = mutableListOf<Int>()
-        var apuesta = 10
+        val apuesta = 10
 
         fun actualizarPantalla() {
             tvJugador.text = "Jugador: ${cartasJugador.joinToString(", ")} (Total: ${cartasJugador.sum()})"
@@ -600,7 +600,7 @@ class MainActivity : AppCompatActivity() {
             }
             animator.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
-                    val sector = ((ruletaCasinoView.anguloBola % 360) / 30).toInt()
+                    val sector = ((ruletaCasinoView.anguloBola % 360f) / 30f).toInt()
                     val colorGanador = when {
                         sector == 0 -> "verde"
                         sector % 2 == 1 -> "rojo"
